@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       target_links:
-        description: 'Target jumlah link (ex: 1)'
+        description: 'Target jumlah link'
         required: true
         default: '1'
       max_runtime_minutes:
@@ -12,38 +12,33 @@ on:
         required: true
         default: '30'
   schedule:
-    - cron: '0 */2 * * *'   # setiap 2 jam sekali
+    - cron: '0 */2 * * *'
 
 jobs:
   run-farm:
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event.inputs.max_runtime_minutes || 30 }}
-    
+    timeout-minutes: 30
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install Dependencies
         run: pip install requests
-      
+
       - name: Execute Farm Script
-        run: |
-          python3 jio_gemini_farm.py --target ${{ github.event.inputs.target_links }} --sweep 60
-        env:
-          GITHUB_ACTIONS: true
-          ACTIONS_RUNNER_DEBUG: 1
-      
+        run: python3 jio_gemini_farm.py --target ${{ github.event.inputs.target_links }} --sweep 60
+
       - name: Check Results
         id: check
         run: |
-          COUNT=$(cat fresh_links.txt 2>/dev/null | wc -l || echo 0)
-          echo "links_found=${COUNT}" >> $GITHUB_STEP_SUMMARY
+          COUNT=$(wc -l < fresh_links.txt 2>/dev/null || echo 0)
           echo "links_count=$COUNT" >> $GITHUB_OUTPUT
-      
+
       - name: Upload Outputs
         uses: actions/upload-artifact@v4
         with:
@@ -53,10 +48,3 @@ jobs:
             farm_results.csv
             farm.log
           retention-days: 7
-      
-      - name: Summary Report
-        run: |
-          echo "## Farm Run Summary" >> $GITHUB_STEP_SUMMARY
-          echo "**Run ID**: ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Target Links**: ${{ github.event.inputs.target_links }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Links Found**: ${{ steps.check.outputs.links_count }}" >> $GITHUB_STEP_SUMMARY
