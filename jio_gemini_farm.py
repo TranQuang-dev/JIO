@@ -104,7 +104,7 @@ GITHUB_SEARCH_API = ("https://api.github.com/search/repositories"
 JIO = "https://www.jio.com/api"
 SEND_OTP = f"{JIO}/jio-login-service/login/sendOtp"
 VERIFY_OTP = f"{JIO}/jio-login-service/login/validateOtp"
-CHECK_NUM = f"{JIO}/jio-recharge-service/recharge/mobility/number/{m}"
+CHECK_NUM = "{JIO}/jio-recharge-service/recharge/mobility/number/{m}"
 AUTH_URL = f"{JIO}/jio-authenticate-service/authenticate/authJsonData"
 NAVIGATE_URL = f"{JIO}/jio-ott-service/ott/subscription/navigate/Z0241"
 ACTIVATE_URL = f"{JIO}/jio-ott-service/ott/subscription/activate/Z0241?source=JIO"
@@ -366,7 +366,7 @@ def jio_valid(mob: str, cache: dict) -> bool:
     ok = False
     for _ in range(2):
         try:
-            r = requests.get(CHECK_NUM.format(m=mob), timeout=12, headers={
+            r = requests.get(CHECK_NUM.format(JIO=JIO, m=mob), timeout=12, headers={
                 "User-Agent": UA, "Accept": "application/json, */*",
                 "Origin": "https://www.jio.com",
                 "Referer": "https://www.jio.com/selfcare/login/"})
